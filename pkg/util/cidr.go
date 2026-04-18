@@ -42,6 +42,8 @@ func OverlapsCIDR(a, b netip.Prefix) bool {
 
 // SubtractCIDR returns the set of prefixes that cover 'whole' but not 'exclude'.
 // This is a simplified implementation covering the common case.
+// Note: when exclude equals or is broader than whole, an empty slice is returned
+// rather than an error, which callers should treat as "nothing remains".
 func SubtractCIDR(whole, exclude netip.Prefix) ([]netip.Prefix, error) {
 	if !whole.Overlaps(exclude) {
 		return []netip.Prefix{whole}, nil
