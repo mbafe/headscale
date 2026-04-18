@@ -15,6 +15,8 @@ func TestParseCIDR(t *testing.T) {
 		{"fd7a:115c:a1e0::/48", false},
 		{"not-a-cidr", true},
 		{"300.0.0.0/8", true},
+		// edge case: host bits set should still parse as a valid prefix
+		{"10.0.0.1/8", false},
 	}
 	for _, tt := range tests {
 		_, err := ParseCIDR(tt.cidr)
@@ -62,7 +64,9 @@ func TestLastUsableIP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if ip.String() != "192.168.1.3" {
-		t.Errorf("expected 192.168.1.3, got %s", ip)
+	// /30 has 4 addresses: .0 (network), .1, .2, .3 (broadcast)
+	// last usable is .2, not .3
+	if ip.String() != "192.168.1.2" {
+		t.Errorf("expected 192.168.1.2, got %s", ip)
 	}
 }
