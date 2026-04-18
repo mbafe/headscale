@@ -38,7 +38,9 @@ func FirstUsableIP(prefix netip.Prefix) (netip.Addr, error) {
 	return ip, nil
 }
 
-// LastUsableIP returns the last usable host IP in a prefix (broadcast - 1 for IPv4).
+// LastUsableIP returns the last usable host IP in a prefix.
+// For IPv4, this is the address just before the broadcast address.
+// Note: this iterates through the prefix, so avoid calling on very large IPv6 prefixes.
 func LastUsableIP(prefix netip.Prefix) (netip.Addr, error) {
 	masked := prefix.Masked()
 	ip := masked.Addr()
