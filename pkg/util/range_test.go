@@ -26,6 +26,17 @@ func TestNewIPRangeInvalid(t *testing.T) {
 	require.Error(t, err)
 }
 
+// TestNewIPRangeEqual verifies that a range where first == last is valid (single-address range).
+func TestNewIPRangeEqual(t *testing.T) {
+	addr := netip.MustParseAddr("10.0.0.5")
+
+	r, err := NewIPRange(addr, addr)
+	require.NoError(t, err)
+	assert.Equal(t, addr, r.First)
+	assert.Equal(t, addr, r.Last)
+	assert.True(t, r.Contains(addr))
+}
+
 func TestIPRangeContains(t *testing.T) {
 	r, err := NewIPRange(
 		netip.MustParseAddr("10.0.0.1"),
