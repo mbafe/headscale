@@ -44,6 +44,8 @@ func OverlapsCIDR(a, b netip.Prefix) bool {
 // This is a simplified implementation covering the common case.
 // Note: when exclude equals or is broader than whole, an empty slice is returned
 // rather than an error, which callers should treat as "nothing remains".
+//
+// Example: SubtractCIDR(10.0.0.0/8, 10.0.0.0/9) => [10.128.0.0/9]
 func SubtractCIDR(whole, exclude netip.Prefix) ([]netip.Prefix, error) {
 	if !whole.Overlaps(exclude) {
 		return []netip.Prefix{whole}, nil
