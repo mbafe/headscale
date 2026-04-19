@@ -92,6 +92,14 @@ func (p *IPPool) IsAllocated(addr netip.Addr) bool {
 	return used
 }
 
+// AllocatedCount returns the number of currently allocated addresses.
+func (p *IPPool) AllocatedCount() int {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	return len(p.allocated)
+}
+
 // Available returns the number of unallocated addresses across all prefixes.
 // Note: for IPv4, network and broadcast addresses are excluded from the count.
 // For host routes (/32 IPv4, /128 IPv6) the single address is considered usable.
