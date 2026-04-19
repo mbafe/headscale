@@ -63,3 +63,17 @@ func TestIPRangeToPrefixes(t *testing.T) {
 	// Should produce a single /24
 	assert.Equal(t, "10.0.0.0/24", prefixes[0].String())
 }
+
+// TestIPRangeToPrefixesUnaligned verifies that an unaligned range produces multiple prefixes.
+func TestIPRangeToPrefixesUnaligned(t *testing.T) {
+	r, err := NewIPRange(
+		netip.MustParseAddr("10.0.0.1"),
+		netip.MustParseAddr("10.0.0.10"),
+	)
+	require.NoError(t, err)
+
+	prefixes := r.ToPrefixes()
+	require.NotEmpty(t, prefixes)
+	// An unaligned range should require more than one prefix to represent.
+	assert.Greater(t, len(prefixes), 1)
+}
