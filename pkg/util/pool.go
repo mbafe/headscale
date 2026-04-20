@@ -103,6 +103,8 @@ func (p *IPPool) AllocatedCount() int {
 // Available returns the number of unallocated addresses across all prefixes.
 // Note: for IPv4, network and broadcast addresses are excluded from the count.
 // For host routes (/32 IPv4, /128 IPv6) the single address is considered usable.
+// Note: this can be slow for large prefixes since it iterates over all addresses;
+// consider caching the result if called frequently in a hot path.
 func (p *IPPool) Available() int {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -117,10 +119,21 @@ func (p *IPPool) Available() int {
 			continue
 		}
 		size := (1 << total)
-		if !prefix.Addr().Is6() && total >= 2 {
-			size -= 2
+		if !prefix.Addr().Is4() {
+			// IPv6: all addresses in the prefix are usable
+			count += size
+		} else {
+			// IPv4: subtract network and broadcast addresses
+			if size > 2 {
+				count += size - 2
+			}
 		}
-		count += size
 	}
-	return count - len(p.allocated)
+
+	// subtract already-allocated addresses
+	count -= len(p.allocated)
+	if count < 0 {
+		count = 0
+	}
+	return count
 }
