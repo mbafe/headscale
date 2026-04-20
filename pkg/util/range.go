@@ -12,6 +12,8 @@ type IPRange struct {
 }
 
 // NewIPRange creates a new IPRange from two addresses.
+// Both addresses must be valid, belong to the same address family (IPv4 or IPv6),
+// and Last must be greater than or equal to First.
 func NewIPRange(first, last netip.Addr) (IPRange, error) {
 	if !first.IsValid() || !last.IsValid() {
 		return IPRange{}, fmt.Errorf("invalid address")
@@ -25,12 +27,14 @@ func NewIPRange(first, last netip.Addr) (IPRange, error) {
 	return IPRange{First: first, Last: last}, nil
 }
 
-// Contains reports whether addr is within the range.
+// Contains reports whether addr is within the range [First, Last] (inclusive).
 func (r IPRange) Contains(addr netip.Addr) bool {
 	return addr.Compare(r.First) >= 0 && addr.Compare(r.Last) <= 0
 }
 
 // ToPrefixes converts the IP range to a minimal set of CIDR prefixes.
+// It greedily selects the largest prefix that fits within the remaining range
+// at each step, which guarantees a minimal covering set.
 func (r IPRange) ToPrefixes() []netip.Prefix {
 	var prefixes []netip.Prefix
 	current := r.First
