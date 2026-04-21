@@ -29,7 +29,8 @@ func TestIPPoolNext(t *testing.T) {
 	pool, err := NewIPPool(prefixes)
 	require.NoError(t, err)
 
-	// A /30 has 2 usable addresses (10.0.0.1 and 10.0.0.2)
+	// A /30 has 2 usable addresses (10.0.0.1 and 10.0.0.2);
+	// network (10.0.0.0) and broadcast (10.0.0.3) are not allocated.
 	ip1, err := pool.Next()
 	require.NoError(t, err)
 	assert.True(t, netip.MustParsePrefix("10.0.0.0/30").Contains(ip1))
@@ -70,7 +71,7 @@ func TestIPPoolRelease(t *testing.T) {
 	err = pool.Release(ip)
 	require.NoError(t, err)
 
-	// Should be able to get the same IP again
+	// Released IPs should be re-issued before allocating new ones
 	ip2, err := pool.Next()
 	require.NoError(t, err)
 	assert.Equal(t, ip, ip2)
@@ -83,6 +84,7 @@ func TestIPPoolReleaseUnknown(t *testing.T) {
 	pool, err := NewIPPool(prefixes)
 	require.NoError(t, err)
 
+	// Releasing an IP outside the pool's prefixes should return an error
 	err = pool.Release(netip.MustParseAddr("192.168.1.1"))
 	assert.Error(t, err)
 }
