@@ -49,6 +49,8 @@ func TestIPRangeContains(t *testing.T) {
 	assert.True(t, r.Contains(netip.MustParseAddr("10.0.0.10")))
 	assert.False(t, r.Contains(netip.MustParseAddr("10.0.0.11")))
 	assert.False(t, r.Contains(netip.MustParseAddr("10.0.0.0")))
+	// Also verify that an address from a completely different subnet is not contained.
+	assert.False(t, r.Contains(netip.MustParseAddr("192.168.1.1")))
 }
 
 func TestIPRangeToPrefixes(t *testing.T) {
