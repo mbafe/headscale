@@ -32,6 +32,19 @@ func (r IPRange) Contains(addr netip.Addr) bool {
 	return addr.Compare(r.First) >= 0 && addr.Compare(r.Last) <= 0
 }
 
+// Size returns the number of addresses in the range as a uint64.
+// Note: for very large IPv6 ranges this may overflow; use with care.
+func (r IPRange) Size() uint64 {
+	// Convert both addresses to their 128-bit representation and subtract.
+	first := r.First.As16()
+	last := r.Last.As16()
+	var diff uint64
+	for i := 8; i < 16; i++ {
+		diff = (diff << 8) | uint64(last[i]-first[i])
+	}
+	return diff + 1
+}
+
 // ToPrefixes converts the IP range to a minimal set of CIDR prefixes.
 // It greedily selects the largest prefix that fits within the remaining range
 // at each step, which guarantees a minimal covering set.
